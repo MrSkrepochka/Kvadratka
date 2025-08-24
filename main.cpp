@@ -2,123 +2,135 @@
 #include <math.h>
 #include <ctype.h>
 
-// TODO RootsNumber
-enum cases  {
-    ZERO, // TODO ZERO_ROOTS
-    ONE,
-    TWO,
-    INF
+struct сoefficients {
+    double a;
+    double b;
+    double c;
+};
+
+enum RootsNumber  {
+    ZERO_ROOTS, 
+    ONE_ROOT,
+    TWO_ROOTS,
+    INFINITE_ROOTS,
 };
 
 const double EPS =1e-6;
 
 void PrintOutput (int nRoots, double x1, double x2);
-bool ReadInput(double *a, double *b, double *c);
-int SolveEquation (double a, double b, double c, double *x1, double *x2);
-int SolveLinear ( double *x, double b, double c);
-int SolveQuadratic (double a, double b, double c, double *x1, double *x2);
+bool ReadInput ( сoefficients *kf, double a,  double b, double c);
+RootsNumber SolveEquation (сoefficients kf, double *x1, double *x2);
+RootsNumber SolveLinear ( double *x, сoefficients kf);
+RootsNumber SolveQuadratic (сoefficients kf, double *x1, double *x2);
 
 int main()
 {
     double a = 0, b = 0, c = 0;
+    struct сoefficients kf; // структура для хранения значений коэффициентов a, b, c
     double x1 = NAN, x2 = NAN; 
 
-    if (ReadInput(&a, &b, &c) == false )
+    if (ReadInput( &kf, a, b, c) == false )
     {
         printf("Неверный ввод\n");
         return 0;
     }
 
-    int nRoots = SolveEquation (a, b, c, &x1, &x2);
+    int nRoots = SolveEquation (kf, &x1, &x2);
     PrintOutput(nRoots, x1, x2);
     
     return 0;
 }
 
-bool ReadInput(double *a, double *b, double *c)
+bool ReadInput (сoefficients *kf, double a, double b, double c)
 {
     printf("Введите значения коэффициентов уравнения\n");
     printf("вида a*x^2+b*x+c=0\n");
     printf("a, b, и с: \n");
 
-    int nInput = scanf("%lf %lf %lf", a, b, c );
+    int nInput = scanf("%lf %lf %lf", &a, &b, &c ); // как ввести через scanf сразу в kf.a, ... 
+    (*kf).a = a;                                    // и окончательно избавиться от локальных
+    (*kf).b = b;                                    // переменных a, b, c?
+    (*kf).c = c;
     
-    if ( isfinite (*a) == 0 || isfinite (*b) == 0 || isfinite (*c) == 0 || nInput<3 )
+    if ( isfinite ((*kf).a) == 0 || isfinite ((*kf).b) == 0 || isfinite ((*kf).c) == 0 || nInput<3 )
         return false;
     else
         return true;
 }
 
-// TODO return type
-int SolveEquation (double a, double b, double c, double *x1, double *x2) 
+
+RootsNumber SolveEquation (сoefficients kf, double *x1, double *x2) 
 { 
-    if (fabs(a) < EPS)
-        return SolveLinear (x1, b, c); 
+    if (fabs(kf.a) < EPS)
+        return SolveLinear (x1, kf); 
     else
-        return SolveQuadratic (a, b, c, x1, x2);
+        return SolveQuadratic (kf, x1, x2);
 }
 
-// TODO return type
-int SolveLinear (double *x1, double b, double c) 
+
+RootsNumber SolveLinear (double *x1, сoefficients kf) 
 {
-    if (fabs(b)<EPS)
+    if (fabs(kf.b)<EPS)
     {
-        if ( fabs (c) < EPS)
-            return INF;
+        if ( fabs (kf.c) < EPS)
+            return INFINITE_ROOTS;
         else
-            return ZERO;
+            return ZERO_ROOTS;
     } 
     else           
     {
-        *x1 = -c/b;
-        return ONE;
+        *x1 = -kf.c/kf.b;
+        return ONE_ROOT;
     }
 }
 
-// TODO change return type
-int SolveQuadratic (double a, double b, double c, double *x1, double *x2 )
+
+RootsNumber SolveQuadratic (сoefficients kf, double *x1, double *x2 )
 {
-    double discriminant= b*b- 4*a*c; 
+    double discriminant= kf.b * kf.b - 4* kf.a * kf.c; 
 
     if ( discriminant < -EPS)
     {
-        return ZERO;
+        return ZERO_ROOTS;
     } 
     else 
     {
         if (fabs (discriminant) < EPS)
         {
-            *x1 = -b / (2 * a);
-            return ONE;
+            *x1 = -kf.b / (2 * kf.a);
+            return ONE_ROOT;
         } 
         else
         {
-            *x1 = (-b - sqrt (discriminant)) / (2 * a);
-            *x2 = (-b + sqrt (discriminant)) / (2 * a);
-            return TWO;
+            *x1 = (-kf.b - sqrt (discriminant)) / (2 * kf.a);
+            *x2 = (-kf.b + sqrt (discriminant)) / (2 * kf.a);
+            return TWO_ROOTS;
         }
     }
 }
 
-// TODO RootsNumber
+
 void PrintOutput (int nRoots, double x1, double x2)
 {   
     switch (nRoots)
     {
-        case ZERO:
+        case ZERO_ROOTS:
             printf("Уравнение не имеет решений\n");
             break;
-        case TWO:
+        case TWO_ROOTS:
             printf("x1 = %lf\n", x1);
             printf("x2 = %lf\n", x2);
             break;
-        case INF:
+        case INFINITE_ROOTS:
             printf("Уравнение имеет бесконечное количество корней\n");
             break;
-        case ONE:
+        case ONE_ROOT:
             printf("Единственное решение х= %lf\n", x1);
+            break;
+        default:
+            printf("Неверный формат параметров вывода\n");
             break;  
             
-        // TODO default case
+        
     }
 }
