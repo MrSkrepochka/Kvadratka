@@ -13,7 +13,7 @@ enum RootsNumber  {
     ZERO_ROOTS, 
     ONE_ROOT,
     TWO_ROOTS,
-    INFINITE_ROOTS,
+    INFINITE_ROOTS = -1,
 };
 
 struct RootsData {
@@ -22,20 +22,26 @@ struct RootsData {
     double x2;
 };
 
+struct TestParameters {
+    struct Coefficients arg;
+    struct RootsData vol;
+};
+
+
 const double EPS =1e-6;
 
 void AllTests ();
 
 void PrintOutput (RootsData root);
 bool ReadInput (Coefficients *coefficient);
-void RunTest (double a, double b, double c, Coefficients coefficient, RootsData root, int nRoots, double x1, double x2);
+int RunTest ( int i, FILE *testfile, RootsData root, TestParameters test);
 RootsNumber SolveEquation (Coefficients coefficient,  RootsData *root);
 RootsNumber SolveLinear (RootsData *root, Coefficients coefficient);
 RootsNumber SolveQuadratic (Coefficients coefficient, RootsData *root);
 
 int main()
 {
-    RootsData root;
+    RootsData root = {ZERO_ROOTS, NAN, NAN};
     Coefficients coefficient; 
     AllTests ();
 
@@ -60,7 +66,7 @@ bool ReadInput (Coefficients *coefficient)
     printf("a, b, и с: \n");
 
     int nInput = scanf ("%lf %lf %lf", &coefficient -> a, &coefficient -> b, &coefficient -> c);
-    
+
     if ( isfinite ((*coefficient).a) == 0 || isfinite ((*coefficient).b) == 0 || isfinite ((*coefficient).c) == 0 || nInput<3 )
         return false;
     else
@@ -94,18 +100,22 @@ RootsNumber SolveLinear (RootsData *root, Coefficients coefficient)
     if (fabs (coefficient.b)<EPS)
     {
         if (fabs (coefficient.c) < EPS)
+        {
+            root -> x1 = NAN;
+            root -> x2 = NAN;
             return INFINITE_ROOTS;
+        }
         else
         {
-            root -> x1 = 0;
-            root -> x2 = 0;
+            root -> x1 = NAN;
+            root -> x2 = NAN;
             return ZERO_ROOTS;
         }    
     } 
     else           
     {
         root -> x1 = -coefficient.c/coefficient.b;
-        root -> x2 = -coefficient.c/coefficient.b;
+        root -> x2 = NAN; 
         return ONE_ROOT;
     }
 }
@@ -122,8 +132,8 @@ RootsNumber SolveQuadratic (Coefficients coefficient, RootsData *root)
 
     if ( discriminant < -EPS)
     {
-        root -> x1 = 0;
-        root -> x2 = 0;
+        root -> x1 = NAN;
+        root -> x2 = NAN;
         return ZERO_ROOTS;
     } 
     else 
@@ -131,13 +141,13 @@ RootsNumber SolveQuadratic (Coefficients coefficient, RootsData *root)
         if (fabs (discriminant) < EPS)
         {
             root -> x1 = -coefficient.b / (2 * coefficient.a);
-            root -> x2 = -coefficient.b / (2 * coefficient.a);
+            root -> x2 = NAN;
             return ONE_ROOT;
         } 
         else
         {
             root -> x1 = (-coefficient.b - sqrt (discriminant)) / (2 * coefficient.a);
-            root -> x2 = (-coefficient.b + sqrt (discriminant)) / (2 * coefficient.a);
+            root -> x2 = (-coefficient.b + sqrt (discriminant)) / (2 * coefficient.a); 
             return TWO_ROOTS;
         }
     }
@@ -145,9 +155,8 @@ RootsNumber SolveQuadratic (Coefficients coefficient, RootsData *root)
 
 void PrintOutput (RootsData root)
 {
-    assert (isfinite (root.x1));
-    assert (isfinite (root.x2));
-    //assert (isfinite (r.number));
+    //assert (isfinite (root.x1)); мешают работе, когда х1 = NAN или x2 = NAN
+    //assert (isfinite (root.x2));
 
     switch (root.number)
     {
@@ -169,57 +178,51 @@ void PrintOutput (RootsData root)
             break;  
     }
 }
-void AllTests()
+void AllTests ()
 {
-    RootsData root;
-    Coefficients coefficient;
-    
-    RunTest (1, -5 , 6, coefficient, root, 2, 2, 3 );
-    RunTest (1, -5 , 6, coefficient, root, 2, 3, 2 );
-    RunTest (-1, 5, -6, coefficient, root, 2, 3, 2);
-    RunTest (1, 2, 1, coefficient, root, 1, -1, -1);
-    RunTest (1, -4, 3, coefficient, root, 2, 1, 3);
-    RunTest (1, -4, 3, coefficient, root, 2, 3, 1);
-    RunTest (1, 5 , 7, coefficient, root, 0, 0, 0);
-    RunTest (1, 0, -25, coefficient, root, 2, -5, 5);
-    RunTest (1, 0, 25, coefficient, root, 0, 0, 0);
-    RunTest (0, 5, 10, coefficient, root, 1, -2, -2);
-    RunTest (1, 5, 0, coefficient, root, 2, -5, 0);
+    int nTests = 0;
+    RootsData root = {ZERO_ROOTS, NAN, NAN};
+    FILE *testfile = fopen ("Tests.txt", "r");           // добавить прроверку на правильный формат ввода
+    printf ("Введите количчество тестов\n");
+    scanf ("%d", &nTests); 
+    TestParameters test = {};
+    int nRead =0; 
 
+    for ( int i=1; i<=nTests; i++) // TODO rename i
+    {
+        RunTest( i, testfile, root, test);
+    }
+
+    // RunTest()
+    // RunTest()
+    // RunTest()
 }
 
-void RunTest ( double a, double b, double c, Coefficients coefficient, RootsData root, int nRoots, double x1, double x2)
+int RunTest (int i, FILE *testfile, RootsData root, TestParameters test)
 {
-    /*assert (isfinite(a));
-    assert (isfinite(b));
-    assert (isfinite(c));
-    assert (isfinite(nRoots));
-    assert (isfinite(x1));
-    assert (isfinite(x2));*/
-    //assert (isfinite (root.number));
 
+    fscanf(testfile, "%lf %lf %lf %d %lf %lf", &test.arg.a, &test.arg.b, &test.arg.c, &test.vol.number, &test.vol.x1, &test.vol.x2);
+    //добавить проверку на наличие ровно 6 элементов ввода
 
-
-    coefficient.a = a;
-    coefficient.b = b;
-    coefficient.c = c;
-
-    root.number = SolveEquation (coefficient, &root);
-    if (root.number == nRoots)
+    root.number = SolveEquation (test.arg, &root);
+    if (root.number == test.vol.number)
     {
-        if ((fabs (root.x1 - x1) < EPS && fabs (root.x2 - x2) < EPS) || ( fabs (root.x1 - x2) < EPS && fabs (root.x2 - x1) < EPS) )
+        if ((fabs (root.x1 - test.vol.x1) < EPS && fabs (root.x2 - test.vol.x2) < EPS) || ( fabs (root.x1 - test.vol.x2) < EPS && fabs (root.x2 - test.vol.x1) < EPS) || (isnan (root.x1) == 1 && isnan(test.vol.x1) == 1 && fabs (root.x2 - test.vol.x2) < EPS) || (isnan (root.x2) == 1 && isnan(test.vol.x1) == 1 && fabs (root.x1 - test.vol.x2) < EPS) || (isnan (root.x1) == 1 && isnan(test.vol.x2) == 1 && fabs (root.x2 - test.vol.x1) < EPS) || (isnan (root.x2) == 1 && isnan(test.vol.x2) == 1 && fabs (root.x1 - test.vol.x1) < EPS) || ( isnan (root.x1) == 1 && isnan (root.x2) == 1 && isnan(test.vol.x1) == 1 && isnan(test.vol.x2) == 1))
         {
-            printf("Получен верный ответ\n");
+            printf("Тест номер %d прошел успешно\n", i);
+            return 0;
         }
         else
         {
-            printf("Получен неверный  ответ\n");
+            printf("Тест номер %d провален\n", i);
             printf ("nRoots = %d, x1 = %lf, x2 = %lf \n", root.number, root.x1, root.x2);
+            return 1;
         }
     } 
     else
         {
-            printf("Получен неверный  ответ\n");
+            printf("Тест номер %d провален\n", i);
             printf ("nRoots = %d, x1 = %lf, x2 = %lf \n", root.number, root.x1, root.x2);
+            return 1;
         }
 }
