@@ -1,54 +1,37 @@
 #include "Tests.h"
+#include "StringToRootsCount.h"
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
 
 const int maxNumberLine = 17;
-const char infiniteroots[] = "INFINITE_ROOTS";
-const char zeroroots[] = "ZERO_ROOTS";
-const char oneroot[] = "ONE_ROOT";
-const char tworoots[] = "TWO_ROOTS";
+const int expectedReadResult = 6;
 
 void RunAllTests()
 {
     FILE *testfile = fopen ("Tests.txt", "r");
     TestParameters test = {};
 
-    int expectedReadResult= 6;
+    int ReadResult = expectedReadResult;
     char rootsNumberLine [maxNumberLine] = "";
     int nTest = 1;
-    while (expectedReadResult == 6)
+    while (ReadResult == expectedReadResult)
     {
-        expectedReadResult = -1;
-        expectedReadResult += fscanf(testfile, "%lf %lf %lf %16s %lf %lf" , &test.arg.a, &test.arg.b, &test.arg.c,
-                                      &rootsNumberLine, &test.values.x1, &test.values.x2 );
-        if (strcmp(rootsNumberLine, infiniteroots) == 0)
-        {
-            test.values.number = INFINITE_ROOTS;
-            expectedReadResult++;
-        }
-        if (strcmp(rootsNumberLine, zeroroots) == 0)
-        {
-            test.values.number = ZERO_ROOTS;
-            expectedReadResult++;
-        }
-        if (strcmp(rootsNumberLine, oneroot) == 0)
-        {
-            test.values.number = ONE_ROOT;
-            expectedReadResult++;
-        }
-        if (strcmp(rootsNumberLine, tworoots) == 0)
-        {
-            test.values.number = TWO_ROOTS;
-            expectedReadResult++;
-        }
+        ReadResult = fscanf(testfile, "%lf %lf %lf %16s %lf %lf" , &test.arg.a, &test.arg.b, &test.arg.c,
+                            rootsNumberLine, &test.values.x1, &test.values.x2 );
 
-        if (expectedReadResult == 6)
+        if (ReadResult == 6)
         {
-            RunTest (test, nTest);
-            nTest++;
+            if (StringToRootsCount (rootsNumberLine, &test) == true)
+            {
+                RunTest (test, nTest);
+                nTest++;
+            }
+            else
+            {
+                printf("Неверный формат тестового файла\n");
+            }
         }
-
     }
 
     fclose(testfile);
