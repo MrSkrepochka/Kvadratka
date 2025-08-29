@@ -58,9 +58,9 @@ int main()
     return 0;
 }
 
-void CLearBuffer()
+void ClearBuffer()
 {
-    while (getchar () != EOF)
+    while (getchar () != '\n')
     {
         continue;
     }
