@@ -10,6 +10,6 @@ struct TestParameters {
 };
 
 void AllTests ();
-void RunTest (TestParameters);
+void RunTest (TestParameters, int);
 
 #endif

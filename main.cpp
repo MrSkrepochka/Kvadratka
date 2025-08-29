@@ -12,32 +12,42 @@ int main()
 
     RootsData root;
     Coefficients coefficient;
-    int Option = 1;
 
-    printf("Введите '1' для ручного ввода коэффициентов\n");
-    printf("Или '2' для диагностики программы на основе заданных тестов\n");
-    scanf("%d", &Option);
-
-    switch (Option)
+    char option = '0';
+    int status = 1;
+    while (status == 1)
     {
-        case 1:
-            if (!ReadInput( &coefficient ))
+        printf("Введите '1' для ручного ввода коэффициентов\n");
+        printf("Или '2' для диагностики программы на основе заданных тестов.\n");
+        printf("Для выхода из программы введите 'q'\n");
+        scanf("%c", &option);
+        switch (option)
+        {
+        case '1':
+            if (!ReadInput(&coefficient))
             {
                 printf("Неверный ввод\n");
-                return 0;
+            } else
+            {
+                root.number = SolveEquation (coefficient, &root);
+                PrintOutput(root);
             }
-            root.number = SolveEquation (coefficient, &root);
-            PrintOutput(root);
             break;
-        case 2:
+        case '2':
             AllTests();
             break;
-        default:
-            printf("Неверный выбор опции\n");
+        case 'q':
+            status = 0;
             break;
+        default:
+        printf("Неверный выбор опции\n");
+        break;
+        }
+        while (getchar() != '\n')
+        {
+            continue;
+        }
     }
 
     return 0;
 }
-
-

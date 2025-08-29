@@ -6,7 +6,7 @@
 bool ReadInput (Coefficients *coefficient)
 {
     assert( coefficient != NULL);
-    printf("Введите значения коэффициентов уравнения\n");
+    printf("введите значения коэффициентов уравнения\n");
     printf("вида a*x^2+b*x+c=0\n");
     printf("a, b, и с: \n");
 
