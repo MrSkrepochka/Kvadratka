@@ -34,21 +34,18 @@ RootsNumber SolveQuadratic (Coefficients coefficient, RootsData *root)
         root -> x2 = NAN;
         return ZERO_ROOTS;
     }
-    else
+
+    if (fabs (discriminant) < EPS)
     {
-        if (fabs (discriminant) < EPS)
-        {
-            root -> x1 = -coefficient.b / (2 * coefficient.a);
-            root -> x2 = NAN;
-            return ONE_ROOT;
-        }
-        else
-        {
-            root -> x1 = (-coefficient.b - sqrt (discriminant)) / (2 * coefficient.a);
-            root -> x2 = (-coefficient.b + sqrt (discriminant)) / (2 * coefficient.a);
-            return TWO_ROOTS;
-        }
+        root -> x1 = -coefficient.b / (2 * coefficient.a);
+        root -> x2 = NAN;
+        return ONE_ROOT;
     }
+
+    // TODO do not compute sqrt / 2a twice
+    root -> x1 = (-coefficient.b - sqrt (discriminant)) / (2 * coefficient.a);
+    root -> x2 = (-coefficient.b + sqrt (discriminant)) / (2 * coefficient.a);
+    return TWO_ROOTS;
 }
 
 RootsNumber SolveLinear (RootsData *root, Coefficients coefficient)
@@ -59,6 +56,7 @@ RootsNumber SolveLinear (RootsData *root, Coefficients coefficient)
 
     assert (root != NULL);
 
+    // TODO reduce nesting
     if (fabs (coefficient.b) < EPS)
     {
         if (fabs (coefficient.c) < EPS)

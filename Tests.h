@@ -6,10 +6,10 @@
 
 struct TestParameters {
     Coefficients arg;
-    RootsData vol;
+    RootsData values;
 };
 
-void AllTests ();
+void RunAllTests ();
 void RunTest (TestParameters, int);
 
 #endif

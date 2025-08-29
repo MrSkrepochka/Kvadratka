@@ -4,23 +4,31 @@
 #include "Tests.h"
 #include <stdio.h>
 #include <math.h>
-#include <ctype.h>
-#include <assert.h>
+
+
+enum ProgramStatus {
+    OFF,
+    ON,
+};
+
+void ClearBuffer();
 
 int main()
 {
 
-    RootsData root;
-    Coefficients coefficient;
+    RootsData root = {ZERO_ROOTS, NAN, NAN};
+    Coefficients coefficient = {NAN, NAN, NAN};
 
     char option = '0';
-    int status = 1;
-    while (status == 1)
+    ProgramStatus status = ON;
+
+    while (status == ON)
     {
         printf("Введите '1' для ручного ввода коэффициентов\n");
         printf("Или '2' для диагностики программы на основе заданных тестов.\n");
         printf("Для выхода из программы введите 'q'\n");
         scanf("%c", &option);
+
         switch (option)
         {
         case '1':
@@ -34,20 +42,26 @@ int main()
             }
             break;
         case '2':
-            AllTests();
+            RunAllTests();
             break;
         case 'q':
-            status = 0;
+            status = OFF;
             break;
         default:
-        printf("Неверный выбор опции\n");
-        break;
+            printf("Неверный выбор опции\n");
+            break;
         }
-        while (getchar() != '\n')
-        {
-            continue;
-        }
+
+        ClearBuffer();
     }
 
     return 0;
+}
+
+void CLearBuffer()
+{
+    while (getchar () != EOF)
+    {
+        continue;
+    }
 }

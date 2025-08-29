@@ -7,6 +7,7 @@ struct Coefficients {
     double c;
 };
 
+void ClearBuffer();
 bool ReadInput (Coefficients *coefficient);
 
 #endif
